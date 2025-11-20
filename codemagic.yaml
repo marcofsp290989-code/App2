@@ -2,23 +2,17 @@ workflows:
   adaptive_power_engine_build:
     name: Adaptive Power Engine v4 - Build
     max_build_duration: 60
-    instance_type: linux_x2  # Instância Linux para projetos Android nativos
+    instance_type: linux_x2
     
     environment:
-      groups:
-        # - keystore_credentials  # Descomente se tiver keystore configurado
       vars:
         GRADLE_OPTS: "-Xmx4096m -Dorg.gradle.daemon=false"
-        PACKAGE_NAME: "com.adaptivepower.engine"  # Ajuste ao seu package
       java: 17
-      android_signing:
-        # - keystore_reference  # Descomente para builds assinados
     
     cache:
       cache_paths:
         - $HOME/.gradle/caches
         - $HOME/.gradle/wrapper
-        - $HOME/.android/build-cache
     
     triggering:
       events:
@@ -27,15 +21,9 @@ workflows:
       branch_patterns:
         - pattern: "*"
           include: true
-      cancel_previous_builds: true  # Cancela builds anteriores
+      cancel_previous_builds: true
     
     scripts:
-      - name: Configurar ambiente Android
-        script: |
-          echo "Android SDK: $ANDROID_SDK_ROOT"
-          echo "Java version:"
-          java -version
-      
       - name: Preparar permissões Gradle
         script: |
           chmod +x ./gradlew
@@ -44,34 +32,13 @@ workflows:
         script: |
           ./gradlew clean
       
-      - name: Verificar dependências
-        script: |
-          ./gradlew dependencies
-      
-      - name: Executar testes unitários
-        script: |
-          ./gradlew test --stacktrace
-        ignore_failure: true  # Não falha o build se testes falharem
-      
       - name: Construir APK Debug
         script: |
-          ./gradlew assembleDebug --stacktrace --info
-      
-      # Para build Release (descomente quando tiver keystore configurado):
-      # - name: Construir APK Release
-      #   script: |
-      #     ./gradlew assembleRelease --stacktrace
-      #
-      # - name: Construir App Bundle Release
-      #   script: |
-      #     ./gradlew bundleRelease --stacktrace
+          ./gradlew assembleDebug --stacktrace
     
     artifacts:
       - app/build/outputs/*/.apk
-      - app/build/outputs/*/.aab
       - app/build/outputs/**/mapping.txt
-      - app/build/reports/*/
-      - app/build/test-results/*/
     
     publishing:
       email:
@@ -80,11 +47,3 @@ workflows:
         notify:
           success: true
           failure: true
-      
-      # Slack (opcional - descomente e configure):
-      # slack:
-      #   channel: "#builds"
-      #   notify_on_build_start: true
-      #   notify:
-      #     success: true
-      #     failure: true
