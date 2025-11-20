@@ -3,6 +3,8 @@ name: Android Build
 on:
   push:
     branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
 
 jobs:
   build:
@@ -12,19 +14,27 @@ jobs:
     - name: Checkout código
       uses: actions/checkout@v4
 
-    - name: 🔍 DIAGNÓSTICO - Ver estrutura do projeto
-      run: |
-        echo "=== Ficheiros na raiz ==="
-        ls -la
-        echo ""
-        echo "=== Procurar gradlew em todo o projeto ==="
-        find . -name "gradlew" -type f
-        echo ""
-        echo "=== Estrutura completa ==="
-        tree -L 3 || find . -type d | head -20
-
     - name: Configurar JDK 17
       uses: actions/setup-java@v4
       with:
         java-version: '17'
         distribution: 'temurin'
+
+    - name: Encontrar e dar permissão ao gradlew
+      run: |
+        GRADLEW=$(find . -name "gradlew" -type f | head -1)
+        echo "Gradlew encontrado em: $GRADLEW"
+        chmod +x $GRADLEW
+
+    - name: Build APK Debug
+      run: |
+        GRADLEW=$(find . -name "gradlew" -type f | head -1)
+        GRADLEW_DIR=$(dirname $GRADLEW)
+        cd $GRADLEW_DIR
+        ./gradlew assembleDebug --stacktrace
+
+    - name: Encontrar e fazer upload do APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: app-debug-apk
+        path: "**/outputs/apk/debug/*.apk"
