@@ -1,49 +1,13 @@
 workflows:
-  adaptive_power_engine_build:
-    name: Adaptive Power Engine v4 - Build
+  android-build:
+    name: Android APK
     max_build_duration: 60
-    instance_type: linux_x2
-    
     environment:
       vars:
-        GRADLE_OPTS: "-Xmx4096m -Dorg.gradle.daemon=false"
-      java: 17
-    
-    cache:
-      cache_paths:
-        - $HOME/.gradle/caches
-        - $HOME/.gradle/wrapper
-    
-    triggering:
-      events:
-        - push
-        - pull_request
-      branch_patterns:
-        - pattern: "*"
-          include: true
-      cancel_previous_builds: true
-    
+        JAVA_TOOL_OPTIONS: "-Xmx3g"
     scripts:
-      - name: Preparar permissões Gradle
+      - name: Build debug APK
         script: |
-          chmod +x ./gradlew
-      
-      - name: Limpar build anterior
-        script: |
-          ./gradlew clean
-      
-      - name: Construir APK Debug
-        script: |
-          ./gradlew assembleDebug --stacktrace
-    
+          ./gradlew assembleDebug
     artifacts:
-      - app/build/outputs/*/.apk
-      - app/build/outputs/**/mapping.txt
-    
-    publishing:
-      email:
-        recipients:
-          - teu_email_aqui@xxxx.com
-        notify:
-          success: true
-          failure: true
+      - app/build/outputs/**/*.apk
