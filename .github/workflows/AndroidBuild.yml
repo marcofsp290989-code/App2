@@ -12,23 +12,26 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
-    - name: Setup JDK
+    - name: Setup JDK 17
       uses: actions/setup-java@v4
       with:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Setup Android SDK
-      uses: android-actions/setup-android@v3
-
-    - name: Build APK
+    - name: Make gradlew executable
       run: |
-        cd $(find . -name "gradlew" -exec dirname {} \; | head -1)
-        chmod +x gradlew
-        ./gradlew assembleDebug
+        find . -name "gradlew" -type f -exec chmod +x {} \;
+
+    - name: Build with Gradle
+      run: |
+        GRADLE_DIR=$(find . -type f -name "gradlew" | head -1 | xargs dirname)
+        cd "$GRADLE_DIR"
+        ./gradlew assembleDebug --stacktrace --no-daemon
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: apk
-        path: "**/*.apk"
+        name: app-debug
+        path: |
+          **/build/outputs/apk/debug/*.apk
+          **/build/outputs/apk/debug/**/*.apk
