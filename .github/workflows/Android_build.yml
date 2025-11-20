@@ -3,38 +3,32 @@ name: Android Build
 on:
   push:
     branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout código
+    - name: Checkout
       uses: actions/checkout@v4
 
-    - name: Configurar JDK 17
+    - name: Setup JDK
       uses: actions/setup-java@v4
       with:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Encontrar e dar permissão ao gradlew
-      run: |
-        GRADLEW=$(find . -name "gradlew" -type f | head -1)
-        echo "Gradlew encontrado em: $GRADLEW"
-        chmod +x $GRADLEW
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
 
-    - name: Build APK Debug
+    - name: Build APK
       run: |
-        GRADLEW=$(find . -name "gradlew" -type f | head -1)
-        GRADLEW_DIR=$(dirname $GRADLEW)
-        cd $GRADLEW_DIR
-        ./gradlew assembleDebug --stacktrace
+        cd $(find . -name "gradlew" -exec dirname {} \; | head -1)
+        chmod +x gradlew
+        ./gradlew assembleDebug
 
-    - name: Encontrar e fazer upload do APK
+    - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: app-debug-apk
-        path: "**/outputs/apk/debug/*.apk"
+        name: apk
+        path: "**/*.apk"
