@@ -1,0 +1,49 @@
+workflows:
+  adaptive_power_engine_build:
+    name: Adaptive Power Engine v4 - Build
+    max_build_duration: 60  # minutos
+
+    environment:
+      vars:
+        GRADLE_OPTS: "-Xmx4096m"
+      java: "17"               # versão recomendada
+      android: "latest"
+
+    cache:
+      cache_paths:
+        - ~/.gradle/caches
+        - ~/.gradle/wrapper
+
+    triggering:
+      events:
+        - push
+        - pull_request
+      branch_patterns:
+        - pattern: "*"
+          include: true
+
+    scripts:
+      - name: Preparar permissões de execução
+        script: |
+          chmod +x ./gradlew
+
+      - name: Construir APK Debug
+        script: |
+          ./gradlew assembleDebug --stacktrace
+
+      # Caso queiras gerar o Release, descomenta:
+      # - name: Construir APK Release
+      #   script: |
+      #     ./gradlew assembleRelease --stacktrace
+
+    artifacts:
+      - app/build/outputs/*/.apk
+      - app/build/outputs/**/mapping.txt
+
+    publishing:
+      email:
+        recipients:
+          - "marcopereira55@hotmail.com"
+        notify:
+          success: true
+          failure: true
