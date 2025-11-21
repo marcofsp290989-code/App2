@@ -1,4 +1,4 @@
-Name: Android Build
+name: Android Build
 
 on:
   push:
@@ -20,24 +20,25 @@ jobs:
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
 
-    # NOVO PASSO CRUCIAL:
-    # Resolve o erro de "licenças não aceites" injetando uma resposta 'yes' 
-    # para aceitar todos os termos e condições do SDK.
-    - name: Aceitar Licenças do Android SDK
+    - name: Install cmdline-tools
       run: |
-        yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses
+        mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
+        cd $ANDROID_SDK_ROOT/cmdline-tools
+        wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O tools.zip
+        unzip tools.zip -d latest
+        rm tools.zip
 
-    - name: Grant execute permission for gradlew
+    - name: Accept Android SDK licenses
+      run: yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses
+
+    - name: Install required SDK packages
       run: |
-        # Garantindo que o gradlew existe, se não, cria
-        if [ ! -f "gradlew" ]; then
-          gradle wrapper --gradle-version=8.2
-        fi
-        chmod +x gradlew
+        sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v3
 
     - name: Build Debug APK
-      # Agora que o build.gradle (nível de projeto) foi corrigido e as licenças foram aceites, 
-      # esta etapa deve ser executada com sucesso.
       run: ./gradlew assembleDebug --stacktrace
 
     - name: Upload APK
