@@ -10,25 +10,29 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ Baixar o código
       - uses: actions/checkout@v3
 
+      # 2️⃣ Configurar JDK 17
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: '17'
 
+      # 3️⃣ Instalar Android SDK (SDK + build-tools + plataforma)
+      - name: Install Android SDK
+        uses: android-actions/setup-android@v2
+
+      # 4️⃣ Dar permissão ao Gradle Wrapper
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
+      # 5️⃣ Build do APK (debug)
       - name: Build APK
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 34
-          target: default
-          arch: x86_64
-          script: ./gradlew clean assembleDebug
+        run: ./gradlew clean assembleDebug
 
+      # 6️⃣ Upload do APK
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
