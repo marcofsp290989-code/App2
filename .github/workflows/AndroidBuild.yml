@@ -1,4 +1,4 @@
-name: Android Build
+Name: Android Build
 
 on:
   push:
@@ -16,35 +16,39 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
+        cache: 'gradle' # Adicionar cache para acelerar builds futuras
 
+    # Esta ação é suficiente para configurar o SDK, e é onde o $ANDROID_SDK_ROOT é definido.
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
+      with:
+        # A ação 'setup-android' lida com a instalação e cache
+        # dos pacotes do SDK.
 
-    - name: Install cmdline-tools
-      run: |
-        mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
-        cd $ANDROID_SDK_ROOT/cmdline-tools
-        wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O tools.zip
-        unzip tools.zip -d latest
-        rm tools.zip
-
-    - name: Accept Android SDK licenses
+    # ⚠️ NOVO PASSO DE LICENÇAS SIMPLIFICADO E USANDO O DIRETÓRIO CORRETO DO SDK
+    # Este passo é mantido porque é mais robusto para aceitar licenças do que a ação padrão.
+    - name: Aceitar Licenças do Android SDK
       run: yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses
 
-    - name: Install required SDK packages
-      run: |
-        sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+    # O PASSO 'Install cmdline-tools' e 'Install required SDK packages' FOI REMOVIDO/SIMPLIFICADO
+    # pois a ação 'android-actions/setup-android@v3' e o próprio Gradle lidam com isso.
 
+    # ⚠️ CORREÇÃO DE DIRETÓRIO: O 'setup-gradle' precisa de saber onde está o gradlew.
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v3
+      with:
+        # O diretório de trabalho é App2, onde o gradlew está.
+        working-directory: App2
 
+    # ⚠️ CORREÇÃO DE DIRETÓRIO: Construir o APK no diretório correto.
     - name: Build Debug APK
       run: ./gradlew assembleDebug --stacktrace
-      working-directory: App2 # Troca 'App2' pelo nome da pasta onde está o gradlew
+      working-directory: App2
 
+    # ⚠️ CORREÇÃO DE DIRETÓRIO: O caminho para o APK de saída deve ser a partir da raiz (App2/app/...).
     - name: Upload APK
       uses: actions/upload-artifact@v4
       if: success()
       with:
         name: app-debug
-        path: App2/app/build/outputs/apk/debug/*.apk # Ajusta se a tua estrutura for diferente
+        path: App2/app/build/outputs/apk/debug/*.apk
