@@ -18,20 +18,16 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Install Android SDK
-        run: |
-          sudo mkdir -p /usr/local/android-sdk
-          sudo chown $USER /usr/local/android-sdk
-          export ANDROID_HOME=/usr/local/android-sdk
-          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$PATH
-          yes | sdkmanager --licenses
-          sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
-
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
       - name: Build APK
-        run: ./gradlew clean assembleDebug
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: default
+          arch: x86_64
+          script: ./gradlew clean assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
