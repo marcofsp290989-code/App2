@@ -25,27 +25,26 @@ jobs:
         # A ação 'setup-android' lida com a instalação e cache
         # dos pacotes do SDK.
 
-    # ⚠️ NOVO PASSO DE LICENÇAS SIMPLIFICADO E USANDO O DIRETÓRIO CORRETO DO SDK
-    # Este passo é mantido porque é mais robusto para aceitar licenças do que a ação padrão.
+    # ⚠️ PASSO ESSENCIAL PARA ACEITAR LICENÇAS
+    # Este passo resolve o erro de "licenças não aceites" do log original.
     - name: Aceitar Licenças do Android SDK
       run: yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses
 
-    # O PASSO 'Install cmdline-tools' e 'Install required SDK packages' FOI REMOVIDO/SIMPLIFICADO
-    # pois a ação 'android-actions/setup-android@v3' e o próprio Gradle lidam com isso.
+    # O PASSO 'Install cmdline-tools' e 'Install required SDK packages' foi removido/simplificado.
 
-    # ⚠️ CORREÇÃO DE DIRETÓRIO: O 'setup-gradle' precisa de saber onde está o gradlew.
+    # ⚠️ CORREÇÃO DE DIRETÓRIO: O 'setup-gradle' precisa de saber onde está o gradlew (App2).
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v3
       with:
         # O diretório de trabalho é App2, onde o gradlew está.
         working-directory: App2
 
-    # ⚠️ CORREÇÃO DE DIRETÓRIO: Construir o APK no diretório correto.
+    # ⚠️ CORREÇÃO DE DIRETÓRIO: Construir o APK no diretório correto (App2).
     - name: Build Debug APK
       run: ./gradlew assembleDebug --stacktrace
       working-directory: App2
 
-    # ⚠️ CORREÇÃO DE DIRETÓRIO: O caminho para o APK de saída deve ser a partir da raiz (App2/app/...).
+    # ⚠️ CORREÇÃO DE DIRETÓRIO: O caminho para o APK de saída deve começar na pasta App2.
     - name: Upload APK
       uses: actions/upload-artifact@v4
       if: success()
