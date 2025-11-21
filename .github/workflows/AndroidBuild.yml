@@ -3,7 +3,7 @@ name: Android Build
 on:
   push:
     branches: [ main, master ]
-
+  
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -40,10 +40,11 @@ jobs:
 
     - name: Build Debug APK
       run: ./gradlew assembleDebug --stacktrace
+      working-directory: App2 # Troca 'App2' pelo nome da pasta onde está o gradlew
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
       if: success()
       with:
         name: app-debug
-        path: app/build/outputs/apk/debug/*.apk
+        path: App2/app/build/outputs/apk/debug/*.apk # Ajusta se a tua estrutura for diferente
