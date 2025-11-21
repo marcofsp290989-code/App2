@@ -1,53 +1,34 @@
-Name: Android Build
+name: Build Android APK
 
 on:
   push:
-    branches: [ main, master ]
-  
+    branches:
+      - main
+  pull_request:
+
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
     - name: Set up JDK 17
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@v3
       with:
-        java-version: '17'
+        java-version: 17
         distribution: 'temurin'
-        cache: 'gradle' # Adicionar cache para acelerar builds futuras
 
-    # Esta ação é suficiente para configurar o SDK, e é onde o $ANDROID_SDK_ROOT é definido.
-    - name: Setup Android SDK
-      uses: android-actions/setup-android@v3
-      with:
-        # A ação 'setup-android' lida com a instalação e cache
-        # dos pacotes do SDK.
-
-    # ⚠️ PASSO ESSENCIAL PARA ACEITAR LICENÇAS
-    # Este passo resolve o erro de "licenças não aceites" do log original.
-    - name: Aceitar Licenças do Android SDK
-      run: yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses
-
-    # O PASSO 'Install cmdline-tools' e 'Install required SDK packages' foi removido/simplificado.
-
-    # ⚠️ CORREÇÃO DE DIRETÓRIO: O 'setup-gradle' precisa de saber onde está o gradlew (App2).
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v3
-      with:
-        # O diretório de trabalho é App2, onde o gradlew está.
-        working-directory: App2
 
-    # ⚠️ CORREÇÃO DE DIRETÓRIO: Construir o APK no diretório correto (App2).
     - name: Build Debug APK
       run: ./gradlew assembleDebug --stacktrace
-      working-directory: App2
+      working-directory: App2/App2   # ajuste para o diretório correto do seu projeto
 
-    # ⚠️ CORREÇÃO DE DIRETÓRIO: O caminho para o APK de saída deve começar na pasta App2.
     - name: Upload APK
-      uses: actions/upload-artifact@v4
-      if: success()
+      uses: actions/upload-artifact@v3
       with:
-        name: app-debug
-        path: App2/app/build/outputs/apk/debug/*.apk
+        name: app-debug.apk
+        path: App2/App2/app/build/outputs/apk/debug/app-debug.apk   # ajuste conforme seu projeto
