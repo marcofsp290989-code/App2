@@ -1,50 +1,52 @@
-Name: Android Build
+name: Android Build
 
 on:
   push:
     branches: [ main, master ]
-  
+
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    # 1. Configura o JDK 17 e adiciona cache para as dependências do Gradle,
-    #    o que acelera builds futuras.
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-        cache: 'gradle'
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
 
-    # 2. Configura o Android SDK (necessário para as ferramentas de build e $ANDROID_SDK_ROOT).
-    - name: Setup Android SDK
-      uses: android-actions/setup-android@v3
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          accept-android-sdk-licenses: true
+          log-accepted-android-sdk-licenses: true
 
-    # 3. ⚠️ CORREÇÃO DE LICENÇAS: Aceita todas as licenças do SDK.
-    #    Isto resolve o erro "6 of 7 SDK package licenses not accepted".
-    - name: Aceitar Licenças do Android SDK
-      run: yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses
-      
-    # 4. ⚠️ CORREÇÃO DE DIRETÓRIO: Configura o Gradle no diretório correto.
-    - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@v3
-      with:
-        working-directory: App2 # Define o diretório onde o gradlew está.
+      - name: Install cmdline-tools
+        run: |
+          mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools"
+          cd "$ANDROID_SDK_ROOT/cmdline-tools"
+          wget https://dl.google.com/android/repository/commandlinetools-linux-12266719_latest.zip -O tools.zip
+          unzip tools.zip -d latest
+          rm tools.zip
 
-    # 5. ⚠️ CORREÇÃO DE DIRETÓRIO: Executa o comando de build no diretório correto.
-    - name: Build Debug APK
-      run: ./gradlew assembleDebug --stacktrace
-      working-directory: App2
+      - name: Accept Android SDK licenses
+        run: yes | "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --licenses
 
-    # 6. ⚠️ CORREÇÃO DE DIRETÓRIO: Faz o upload do artifact. O caminho começa em App2.
-    - name: Upload APK
-      uses: actions/upload-artifact@v4
-      if: success()
-      with:
-        name: app-debug
-        # Caminho completo a partir da raiz do repositório
-        path: App2/app/build/outputs/apk/debug/*.apk
+      - name: Install required SDK packages
+        run: |
+          sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug --stacktrace
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: app-debug
+          path: app/build/outputs/apk/debug/*.apk
