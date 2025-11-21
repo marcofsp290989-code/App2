@@ -1,2 +1,2 @@
-rootProject.name = "AdaptiveAIDeviceManager"
-include(":app")
+rootProject.name = "MeuProjeto"
+include ':app'
