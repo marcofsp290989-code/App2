@@ -1,6 +1,5 @@
 name: Build APK
 
-# Dispara a ação quando houver push no branch main
 on:
   push:
     branches:
@@ -11,27 +10,29 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Baixar o código do repositório
       - uses: actions/checkout@v3
 
-      # 2️⃣ Configurar JDK 17
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      # 3️⃣ Configurar Android SDK
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v2
-        with:
-          api-level: 34
+      - name: Install Android SDK
+        run: |
+          sudo mkdir -p /usr/local/android-sdk
+          sudo chown $USER /usr/local/android-sdk
+          export ANDROID_HOME=/usr/local/android-sdk
+          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$PATH
+          yes | sdkmanager --licenses
+          sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
 
-      # 4️⃣ Fazer build do APK
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
       - name: Build APK
         run: ./gradlew clean assembleDebug
 
-      # 5️⃣ Fazer upload do APK como artefato
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
