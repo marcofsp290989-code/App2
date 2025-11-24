@@ -1,2 +1,0 @@
-rootProject.name = "MeuProjeto"
-include ':app'
