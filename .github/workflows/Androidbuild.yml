@@ -2,36 +2,24 @@ name: Build APK
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
+      - uses: actions/checkout@v4
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
+          distribution: 'temurin'
           java-version: '17'
-
-      - name: Build with Gradle (força gerar APK)
-        run: |
-          chmod +x ./gradlew
-          ./gradlew clean
-          ./gradlew assembleDebug || ./gradlew bundleDebug || echo "Nenhum APK/AAB gerado"
-
-      - name: Procurar qualquer APK ou AAB gerado
-        run: find . -name ".apk" -o -name ".aab" || echo "Nada encontrado"
-
-      - name: Upload qualquer APK/AAB que existir
+      - name: Build Debug APK
+        run: ./gradlew :app:assembleDebug --no-daemon
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: App-Gerado
-          path: |
-            */.apk
-            */.aab
+          name: adaptive-apk
+          path: app/build/outputs/apk/debug/*.apk
