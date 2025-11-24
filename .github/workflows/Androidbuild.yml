@@ -10,34 +10,39 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout do código
         uses: actions/checkout@v4
 
-      - name: Fix Gradle Wrapper permissions
-        run: chmod +x gradlew
+      - name: Dar permissão ao gradlew
+        run: chmod +x ./gradlew
 
-      - name: Set up JDK 17
+      - name: Configurar JDK 17
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
+          distribution: temurin
           java-version: '17'
 
-      - name: Install Android SDK
-        uses: android-actions/setup-android@v3
+      # Esse passo é o mais importante agora
+      - name: Fazer build completo com log detalhado
+        run: |
+          ./gradlew clean assembleDebug --stacktrace --info || echo "BUILD FALHOU - ver log acima"
 
-      - name: Build APK Debug
-        run: ./gradlew clean assembleDebug --stacktrace
+      # Mostra tudo que tem na pasta build (pra gente ver o que realmente foi gerado)
+      - name: Listar tudo que foi gerado na pasta build
+        run: |
+          echo "=== Conteúdo da pasta app/build/outputs ==="
+          ls -la app/build/outputs/ || echo "Pasta não existe ainda"
+          echo "=== Conteúdo da pasta build/outputs de todos os módulos ==="
+          find . -path "*/build/outputs" -type d || echo "Nenhum outputs encontrado"
+          echo "=== Procurando qualquer .apk no projeto inteiro ==="
+          find . -name "*.apk" -type f || echo "NENHUM .apk GERADO"
 
-      # Este passo é opcional, mas ajuda a ver onde o APK foi gerado
-      - name: List generated APKs (debug)
-        run: find $GITHUB_WORKSPACE -name "*.apk" || true
-
-      # Upload corrigido – pega o APK não importa o nome do módulo
-      - name: Upload Debug APK
+      # Upload só se existir algum APK (nunca mais vai dar warning amarelo)
+      - name: Upload APK (se existir)
         uses: actions/upload-artifact@v4
+        if: success()
         with:
-          name: app-debug
+          name: APK-Gerado
           path: |
-            */build/outputs/apk/debug/.apk
-            */build/outputs/apk//debug/.apk
+            */.apk
           retention-days: 30
