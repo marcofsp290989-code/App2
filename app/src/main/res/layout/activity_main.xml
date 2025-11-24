@@ -1,0 +1,18 @@
+
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent" android:padding="16dp">
+
+    <TextView android:id="@+id/text_status" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:text="AdaptivePowerEngine A52s\n" android:textSize="18sp"/>
+
+    <Button android:id="@+id/button_start" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:text="Start monitoring" />
+
+    <Button android:id="@+id/button_stop" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:text="Stop monitoring" />
+
+    <TextView android:id="@+id/text_info" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:text="Info will appear here" android:paddingTop="12dp"/>
+</LinearLayout>
