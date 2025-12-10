@@ -1,0 +1,26 @@
+
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.a52s.superai">
+
+    <uses-permission android:name="android.permission.BATTERY_STATS"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+
+    <application
+        android:label="A52s AI SuperApp"
+        android:theme="@style/Theme.Material3.DayNight.NoActionBar">
+
+        <service android:name=".service.AIMonitorService"
+                 android:exported="false"
+                 android:foregroundServiceType="dataSync"/>
+
+        <activity android:name=".ui.MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+
+    </application>
+</manifest>
